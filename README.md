@@ -1,15 +1,30 @@
 # The Account Keeper
 
-## Description
+# Project Description
 
-This project involves building a Laravel-based system to manage and analyze financial transactions for users.
-
+This project is built using **Laravel 10** and utilizes **Docker** for seamless deployment. The application leverages **Laravel Passport** for secure token-based authentication, ensuring a robust and scalable authentication mechanism.
 
 ## Features
 
-- User Registration & Login with token-based authentication
-- An API to handle the creation of credit and debit transactions for users, with real-time balance calculation.
-- API's to get required transactional details.
+The project includes a comprehensive set of APIs for managing financial transactions, including:
+
+1. **Transaction Management**: 
+   - APIs to create and manage debit and credit transactions, ensuring validation for insufficient balances.
+   
+2. **Daily Closing Balance**: 
+   - Retrieve the closing balance for the past specified days.
+   
+3. **Average Balance Calculation**: 
+   - Calculate average balances over defined time segments.
+   
+4. **Income Calculations**: 
+   - APIs to compute total income over specified days and amounts, along with transaction counts.
+   
+5. **Transaction Filtering**: 
+   - Options to filter transactions based on various parameters, such as category IDs and minimum amounts.
+
+All API endpoints are designed to be intuitive and provide detailed responses for ease of integration and usage.
+
 
 ## Requirements
 
