@@ -1,0 +1,67 @@
+version: "3.7"
+services:
+
+  # PHP Service /the app
+  localaccountkeeper-php:
+    container_name: localaccountkeeper-php
+    build:
+      context: .
+      target: php
+      args:
+        - APP_ENV=${APP_ENV}
+    environment:
+      - APP_ENV=${APP_ENV}
+      - CONTAINER_ROLE=app
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - localaccountkeeper-private
+    ports:
+      - 39100:8000
+    depends_on:
+      - localaccountkeeper-mariadb
+
+  # Image--infrastructure:mariadb
+  localaccountkeeper-mariadb:
+    image: mariadb:10.5.9
+    hostname: localaccountkeeper-mariadb
+    container_name: localaccountkeeper-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: account_keeper
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+    networks:
+      - localaccountkeeper-private
+    ports:
+      - '29906:3306'
+    volumes:
+      - ./docker/conf/init:/docker-entrypoint-initdb.d/:ro
+      - type: volume
+        source: localaccountkeeper-mariadb
+        target: /var/lib/mysql
+
+  # Image--infrastructure:pma
+  localaccountkeeper-pma:
+    image: phpmyadmin/phpmyadmin:4.7.9-1
+    container_name: localaccountkeeper-phpMyAdmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: localaccountkeeper-mariadb
+    networks:
+      - localaccountkeeper-private
+    ports:
+      - '29182:80'
+    depends_on:
+      - localaccountkeeper-mariadb
+
+networks:
+  localaccountkeeper-private:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_icc: 'true'
+      com.docker.network.bridge.enable_ip_masquerade: 'true'
+volumes:
+  localaccountkeeper-mariadb:
+
+

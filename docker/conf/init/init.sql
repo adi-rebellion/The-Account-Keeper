@@ -1,0 +1,2 @@
+CREATE DATABASE IF NOT EXISTS account_keeper;
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY '';
