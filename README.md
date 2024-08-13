@@ -8,23 +8,21 @@ This project involves building a Laravel-based system to manage and analyze fina
 ## Features
 
 - User Registration & Login with token-based authentication
-- CRUD operations for Tasks and Notes
-- Relationships between Tasks and Notes (One-to-Many)
-- API endpoints for creating tasks with multiple notes and attachments
-- Filtering and ordering tasks based on priority and note count
+- An API to handle the creation of credit and debit transactions for users, with real-time balance calculation.
+- API's to get required transactional details.
 
 ## Requirements
 
 - Laravel 10.10
 - Docker for deployment (`sudo docker compose build` and `sudo docker compose up`)
-- PHP runs on port 29100, PHPMyAdmin on port 29182
+- PHP runs on port 39100, PHPMyAdmin on port 29182
 
 ## Installation and Setup
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/adi-rebellion/The-Task-Keeper.git
+   git clone https://github.com/adi-rebellion/The-Account-Keeper.git
    cd TaskKeeper
    ```
 
@@ -38,22 +36,11 @@ This project involves building a Laravel-based system to manage and analyze fina
 3. Access the application in your web browser:
 
    ```
-   http://localhost:29100
+   http://localhost:39100
    ```
 
 
-## Test Credentials
 
-   User's Email:
-
-   ```bash
-   john@example.com
-   ```
-  User's Password:
-
-   ```bash
-   password
-   ```
 
 
 
@@ -70,7 +57,7 @@ Explore the API using Swagger UI with Bearer authorization.
 
 
 ```
-http://localhost:29100/api/documentation
+http://localhost:39100/api/documentation
 ```
 
 📘 API documentation is available in Postman format at:

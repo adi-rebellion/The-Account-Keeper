@@ -23,6 +23,116 @@ class TransactionController extends Controller
         $this->transactionRepository = $transactionRepository;
     }
 
+ /**
+ * @OA\Post(
+ *     path="/api/transaction",
+ *     summary="Make a new transaction",
+ *     description="This endpoint allows the logged-in user to make a debit or credit transaction. The transaction will only be processed if the user has sufficient balance for debit transactions.",
+ *     operationId="makeTransaction",
+ *     tags={"Transaction"},
+ *     security={{"bearer": {}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"trans_type", "trans_amount"},
+ *                 @OA\Property(
+ *                     property="trans_type",
+ *                     type="string",
+ *                     enum={"debit", "credit"},
+ *                     description="Type of transaction: either debit or credit"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="trans_amount",
+ *                     type="number",
+ *                     format="float",
+ *                     description="The amount for the transaction"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="category_id",
+ *                     type="integer",
+ *                     description="The ID of the transaction category"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="description",
+ *                     type="string",
+ *                     description="Description of the transaction"
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The transaction has been completed successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="boolean",
+ *                 description="Status of the transaction operation"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Success message"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="transaction",
+ *                     type="object",
+ *                     @OA\Property(property="trans_user_id", type="integer", description="User ID associated with the transaction"),
+ *                     @OA\Property(property="trans_date", type="string", format="date-time", description="Date and time of the transaction"),
+ *                     @OA\Property(property="trans_amount", type="number", format="float", description="Amount of the transaction"),
+ *                     @OA\Property(property="trans_type", type="string", description="Type of the transaction (debit or credit)"),
+ *                     @OA\Property(property="category_id", type="integer", description="ID of the transaction category"),
+ *                     @OA\Property(property="description", type="string", description="Description of the transaction"),
+ *                     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of when the transaction was last updated"),
+ *                     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of when the transaction was created"),
+ *                     @OA\Property(property="id", type="integer", description="ID of the transaction")
+ *                 ),
+ *                 @OA\Property(
+ *                     property="balance_after_transaction",
+ *                     type="number",
+ *                     format="float",
+ *                     description="User's balance after the transaction"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 nullable=true,
+ *                 description="Errors, if any"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request due to validation errors or insufficient balance",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the transaction operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the transaction operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     )
+ * )
+ */
+
+
     public function makeTransaction(TransactionCreateRequest $request): JsonResponse
     {
         try {
@@ -53,6 +163,88 @@ class TransactionController extends Controller
         }
     }
 
+    /**
+ * @OA\Post(
+ *     path="/api/daily-closing-bal",
+ *     summary="Get daily closing balance",
+ *     description="This endpoint returns the daily closing balance for a specified number of days. If no number of days is specified, it defaults to 90 days.",
+ *     operationId="dailyClosingBalance",
+ *     tags={"Transaction"},
+ *     security={{"bearer": {}}},
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="requested_days",
+ *                     type="integer",
+ *                     description="The number of days to fetch the closing balance for. Defaults to 90 days if not provided."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The transaction has been completed successfully. Returns the closing balance for the requested number of days.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="boolean",
+ *                 description="Status of the operation"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Success message"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="requested_for_days",
+ *                     type="integer",
+ *                     description="The number of days for which the closing balance was requested"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="closing_balance",
+ *                     type="object",
+ *                     description="Key-value pairs of date and closing balance"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 nullable=true,
+ *                 description="Errors, if any"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request due to validation errors",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     )
+ * )
+ */
+
     public function dailyClosingBalance(Request $request)
     {
 
@@ -73,7 +265,88 @@ class TransactionController extends Controller
             return $this->responseError([], $e->getMessage());
         }
     }
-
+/**
+ * @OA\Post(
+ *     path="/api/average-bal",
+ *     summary="Get average balance",
+ *     description="This endpoint calculates and returns the average balance for a specified number of days. If no number of days is specified, it defaults to 90 days.",
+ *     operationId="averageBalance",
+ *     tags={"Transaction"},
+ *     security={{"bearer": {}}},
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="requested_days",
+ *                     type="integer",
+ *                     description="The number of days to calculate the average balance for. Defaults to 90 days if not provided."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The average balance has been calculated successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="boolean",
+ *                 description="Status of the operation"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Success message"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="requested_for_days",
+ *                     type="integer",
+ *                     description="The number of days for which the average balance was calculated"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="average_balance",
+ *                     type="number",
+ *                     format="float",
+ *                     description="The calculated average balance"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 nullable=true,
+ *                 description="Errors, if any"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request due to validation errors",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     )
+ * )
+ */
     public function averageBalance(Request $request)
     {
 
@@ -95,7 +368,99 @@ class TransactionController extends Controller
             return $this->responseError([], $e->getMessage());
         }
     }
-
+/**
+ * @OA\Post(
+ *     path="/api/average-segment-bal",
+ *     summary="Get average segment balance",
+ *     description="This endpoint calculates and returns the average balance for two segments: the first N days and the last N days within a specified total number of days. If no number of days is specified, it defaults to 90 total days, with the first 30 days and the last 30 days being compared.",
+ *     operationId="averageSegmentBalance",
+ *     tags={"Transaction"},
+ *     security={{"bearer": {}}},
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="totalNDays",
+ *                     type="integer",
+ *                     description="The total number of days to consider. Defaults to 90 days if not provided."
+ *                 ),
+ *                 @OA\Property(
+ *                     property="firstNDays",
+ *                     type="integer",
+ *                     description="The number of days from the start to calculate the average balance. Defaults to 30 days if not provided."
+ *                 ),
+ *                 @OA\Property(
+ *                     property="lastNDays",
+ *                     type="integer",
+ *                     description="The number of days from the end to calculate the average balance. Defaults to 30 days if not provided."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The average segment balances have been calculated successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="boolean",
+ *                 description="Status of the operation"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Success message"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="first_n_days",
+ *                     type="number",
+ *                     format="float",
+ *                     description="The average balance for the first N days"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="last_n_days",
+ *                     type="number",
+ *                     format="float",
+ *                     description="The average balance for the last N days"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 nullable=true,
+ *                 description="Errors, if any"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request due to validation errors",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     )
+ * )
+ */
     public function averageSegmentBalance(Request $request)
     {
         try{
@@ -133,7 +498,88 @@ class TransactionController extends Controller
 
     }
 
-
+/**
+ * @OA\Post(
+ *     path="/api/last-n-days-income",
+ *     summary="Get last N days income",
+ *     description="This endpoint calculates and returns the total income for the last N days, excluding a specific category ID if provided. Defaults to the last 30 days and excludes category ID 18020004 if not specified.",
+ *     operationId="lastNDaysIncome",
+ *     tags={"Transaction"},
+ *     security={{"bearer": {}}},
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="lastNDays",
+ *                     type="integer",
+ *                     description="The number of days to calculate income for. Defaults to 30 days if not provided."
+ *                 ),
+ *                 @OA\Property(
+ *                     property="exceptCatID",
+ *                     type="integer",
+ *                     description="Category ID to exclude from the income calculation. Defaults to 18020004 if not provided."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The income amount has been calculated successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="boolean",
+ *                 description="Status of the operation"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Success message"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="income_amount",
+ *                     type="number",
+ *                     format="float",
+ *                     description="The total income amount for the specified period"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 nullable=true,
+ *                 description="Errors, if any"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request due to validation errors",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     )
+ * )
+ */
     public function lastNDaysIncome(Request $request)
     {
         try{
@@ -155,7 +601,82 @@ class TransactionController extends Controller
             return $this->responseError([], $e->getMessage());
         }
     }
-
+/**
+ * @OA\Post(
+ *     path="/api/debit-trans-count",
+ *     summary="Get debit transaction count for last N days",
+ *     description="This endpoint returns the count of debit transactions for the last N days for the authenticated user. Defaults to the last 30 days if not specified.",
+ *     operationId="debitTransactionCountLastNDays",
+ *     tags={"Transaction"},
+ *     security={{"bearer": {}}},
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="lastNDays",
+ *                     type="integer",
+ *                     description="The number of days to count debit transactions for. Defaults to 30 days if not provided."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The debit transaction count has been retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="boolean",
+ *                 description="Status of the operation"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Success message"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="debit_count",
+ *                     type="integer",
+ *                     description="The count of debit transactions for the specified period"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 nullable=true,
+ *                 description="Errors, if any"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request due to validation errors",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     )
+ * )
+ */
     public function debitTransactionCountLastNDays(Request $request)
     {
         try{
@@ -176,7 +697,84 @@ class TransactionController extends Controller
             return $this->responseError([], $e->getMessage());
         }
     }
-
+/**
+ * @OA\Post(
+ *     path="/api/income-over-n",
+ *     summary="Get income sum for transactions over a specified amount",
+ *     description="This endpoint calculates and returns the sum of income (credit transactions) where the transaction amount is greater than a specified value for the authenticated user. Defaults to transaction amounts greater than 15 if not specified.",
+ *     operationId="incomeOverN",
+ *     tags={"Transaction"},
+ *     security={{"bearer": {}}},
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="transAmtGreaterThan",
+ *                     type="number",
+ *                     format="float",
+ *                     description="The minimum transaction amount to filter income. Defaults to 15 if not provided."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The sum of income has been calculated successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="boolean",
+ *                 description="Status of the operation"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Success message"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="income_sum",
+ *                     type="number",
+ *                     format="float",
+ *                     description="The sum of income where transaction amount is greater than the specified value"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 nullable=true,
+ *                 description="Errors, if any"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request due to validation errors",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="boolean", description="Status of the operation"),
+ *             @OA\Property(property="message", type="string", description="Error message"),
+ *             @OA\Property(property="errors", type="object", description="Details of the error")
+ *         )
+ *     )
+ * )
+ */
     public function incomeOverN(Request $request)
     {
         try{

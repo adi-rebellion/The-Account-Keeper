@@ -30,7 +30,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('average-segment-bal', [TransactionController::class, 'averageSegmentBalance'])->name('averageSegmentBalance');
     Route::post('last-n-days-income', [TransactionController::class, 'lastNDaysIncome'])->name('lastNDaysIncome');
     Route::post('debit-trans-count', [TransactionController::class, 'debitTransactionCountLastNDays'])->name('debitTransactionCountLastNDays');
-    Route::post('incomeOverN', [TransactionController::class, 'incomeOverN'])->name('incomeOverN');
+    Route::post('income-over-n', [TransactionController::class, 'incomeOverN'])->name('incomeOverN');
 
 });
 
